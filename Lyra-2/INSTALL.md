@@ -35,7 +35,7 @@ SITE=$CONDA_PREFIX/lib/python3.10/site-packages
 ln -sf "$SITE/nvidia/cuda_runtime" "$SITE/nvidia/cudart"
 
 # 6. Install Flash Attention
-MAX_JOBS=16 pip install --no-build-isolation --no-binary :all: flash-attn==2.6.3
+MAX_JOBS=16 uv pip install --no-build-isolation --no-binary flash-attn flash-attn==2.6.3
 
 # 7. Build vendored CUDA extensions
 USE_SYSTEM_EIGEN=1 pip install --no-build-isolation -e 'lyra_2/_src/inference/vipe'
