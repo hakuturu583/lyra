@@ -9,6 +9,8 @@ CC_BIN="${CC_BIN:-/usr/bin/gcc-13}"
 CXX_BIN="${CXX_BIN:-/usr/bin/g++-13}"
 EIGEN_INCLUDE="${EIGEN_INCLUDE:-/usr/include/eigen3}"
 MAX_JOBS="${MAX_JOBS:-8}"
+FLASH_ATTN_MAX_JOBS="${FLASH_ATTN_MAX_JOBS:-4}"
+NVCC_THREADS="${NVCC_THREADS:-2}"
 
 cd "$ROOT_DIR"
 
@@ -56,6 +58,12 @@ source "$ROOT_DIR/.venv/bin/activate"
 export CUDA_HOME
 export CC="$CC_BIN"
 export CXX="$CXX_BIN"
+export MAX_JOBS
+export CMAKE_BUILD_PARALLEL_LEVEL="$MAX_JOBS"
+export MAKEFLAGS="-j$MAX_JOBS"
+export NINJAFLAGS="-j$MAX_JOBS"
+export GIT_CEILING_DIRECTORIES="${HOME}/.cache/uv/sdists-v9"
+export FLASH_ATTENTION_FORCE_BUILD=TRUE
 
 echo "[2/6] Syncing Python dependencies"
 uv sync
@@ -69,7 +77,8 @@ uv pip install --no-build-isolation "transformer_engine[pytorch]"
 ln -sfn "$SITE/nvidia/cuda_runtime" "$SITE/nvidia/cudart"
 
 echo "[4/6] Installing flash-attn"
-MAX_JOBS="$MAX_JOBS" uv pip install --no-build-isolation --no-binary flash-attn flash-attn==2.6.3
+MAX_JOBS="$FLASH_ATTN_MAX_JOBS" NVCC_THREADS="$NVCC_THREADS" \
+  uv pip install --no-build-isolation --no-binary flash-attn flash-attn==2.6.3
 
 echo "[5/6] Building vendored CUDA extensions"
 USE_SYSTEM_EIGEN=1 uv pip install --no-build-isolation -e "lyra_2/_src/inference/vipe"
